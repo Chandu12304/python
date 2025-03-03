@@ -1,36 +1,30 @@
-import turtle 
- 
-def koch_curve(t, length, depth): 
+from turtle import *
+
+screen=Screen()
+
+def koch_curve(length, depth): 
    if depth == 0: 
-       t.forward(length) 
+       forward(length) 
        return 
    length /= 3 
-   koch_curve(t, length, depth - 1) 
-   t.left(60) 
-   koch_curve(t, length, depth - 1) 
-   t.right(120) 
-   koch_curve(t, length, depth - 1) 
-   t.left(60) 
-   koch_curve(t, length, depth - 1) 
+   koch_curve(length, depth - 1) 
+   left(60) 
+   koch_curve(length, depth - 1) 
+   right(120) 
+   koch_curve(length, depth - 1) 
+   left(60) 
+   koch_curve(length, depth - 1) 
  
-# Setup Turtle 
-t = turtle.Turtle() 
-t.speed(0) 
+penup() 
+goto(-80,20) 
+pendown() 
+
+speed(10)
  
-# Define the Koch Snowflake 
-depth = 2  # Change this for complexity 
-size = 300 
-points = [(-size / 2, -100), (size / 2, -100), (0, size * (3**0.5) / 3 - 
-100)] 
- 
-# Move to starting point 
-t.penup() 
-t.goto(points[0]) 
-t.pendown() 
- 
-# Draw the three sides of the Koch Snowflake 
+fillcolor("pink")
+begin_fill()
 for i in range(3): 
-   koch_curve(t, size, depth) 
-   t.right(120) 
- 
-turtle.done() 
+   koch_curve(300,2) 
+   right(120)
+end_fill()
+
