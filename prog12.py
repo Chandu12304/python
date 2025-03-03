@@ -1,46 +1,29 @@
-import turtle  
- 
-def draw_triangle(t, x, y, size, color=None): 
-   """Draws a filled triangle if color is provided, otherwise an 
-outline.""" 
-   if color: 
-       t.fillcolor(color) 
-       t.begin_fill() 
- 
-   t.penup() 
-   t.goto(x, y) 
-   t.pendown() 
- 
-   for _ in range(3):
-       t.forward(size)
-       t.left(120) 
- 
-   if color: 
-      t.end_fill() 
- 
-def sierpinski(t, x, y, size, depth, change_depth): 
-   if depth == 0: 
-       draw_triangle(t, x, y, size)  # Base case: Draw triangle 
-   else: 
-       half = size / 2 
-       height = (size / 2) * (3**0.5)  
- 
-       sierpinski(t, x, y, half, depth - 1, change_depth) 
-       sierpinski(t, x + half, y, half, depth - 1, change_depth) 
-       sierpinski(t, x + half / 2, y + height / 2, half, depth - 1, 
-change_depth) 
- 
-       if depth == change_depth:  # Apply color at specific depth 
-           draw_triangle(t, x, y, half, 'red') 
-           draw_triangle(t, x + half, y, half, 'blue') 
-           draw_triangle(t, x + half / 2, y + height / 2, half, 'magenta') 
- 
- 
-t = turtle.Turtle() 
-t.speed(0) 
- 
- 
-depth = 2  
-sierpinski(t, -200, -200, 400, depth, depth) 
- 
-turtle.done() 
+from turtle import *
+
+screen = Screen()
+
+penup()
+goto(-200, -150)  
+pendown()
+
+colors = ["blue", "red", "magenta"]
+k = 0  
+
+def sierpinskiTriangle(n, l):
+    global k  # Use the global k variable
+    if n == 0:
+        return
+    else:
+        fillcolor(colors[k % 3])  
+        begin_fill()
+        for i in range(3):
+            forward(l)
+            left(120)
+            sierpinskiTriangle(n-1, l/2)
+        end_fill()
+        
+        k += 1  
+
+sierpinskiTriangle(3, 2**8)
+
+screen.mainloop()
