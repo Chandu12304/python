@@ -31,4 +31,4 @@ user_id,movie_id,rating
 4,103,2
 5,101,4
 
-# python movie_recommendation.py ratings.csv
+# python prog14.py ratings.csv
