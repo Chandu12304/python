@@ -1,3 +1,4 @@
+# pip install mrjob
 from mrjob.job import MRJob
 
 class MovieRecommendation(MRJob):
@@ -20,3 +21,14 @@ class MovieRecommendation(MRJob):
 
 if __name__ == '__main__':
     MovieRecommendation.run()
+
+
+# ratings.csv
+user_id,movie_id,rating
+1,101,4
+2,102,3
+3,101,5
+4,103,2
+5,101,4
+
+# python movie_recommendation.py ratings.csv
