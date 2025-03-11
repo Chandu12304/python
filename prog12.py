@@ -24,6 +24,4 @@ def sierpinskiTriangle(n, l):
         
         k += 1  
 
-sierpinskiTriangle(3, 2**8)
-
-screen.mainloop()
+sierpinskiTriangle(3, 2**8)
