@@ -20,8 +20,7 @@ def sierpinskiTriangle(n, l):
             forward(l)
             left(120)
             sierpinskiTriangle(n-1, l/2)
-        end_fill()
-        
+        end_fill()
         k += 1  
 
 sierpinskiTriangle(3, 2**8)
