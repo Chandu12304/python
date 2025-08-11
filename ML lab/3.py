@@ -1,0 +1,164 @@
+import pandas as pd
+import math
+from collections import Counter
+
+def entropy(data, target):
+    counts = Counter(data[target])
+    return -sum((c / len(data)) * math.log2(c / len(data)) for c in counts.values())
+
+def info_gain(data, attr, target):
+    total = entropy(data, target)
+    weighted = sum((len(data[data[attr] == v]) / len(data)) * entropy(data[data[attr] == v], target)
+                   for v in data[attr].unique())
+    return total - weighted
+
+def id3(data, features, target, depth=0, max_depth=5):
+    labels = data[target]
+    if len(set(labels)) == 1:
+        return f"→ {labels.iloc[0]}"
+    if not features or depth >= max_depth:
+        return f"→ {labels.mode()[0]}"
+
+    best = max(features, key=lambda f: info_gain(data, f, target))
+    tree = {best: {}}
+
+    for val in sorted(data[best].unique()):
+        subset = data[data[best] == val]
+        if subset.empty:
+            tree[best][val] = f"→ {labels.mode()[0]}"
+        else:
+            remaining = [f for f in features if f != best]
+            tree[best][val] = id3(subset, remaining, target, depth + 1, max_depth)
+
+    return tree
+
+def print_tree(tree, indent=""):
+    if isinstance(tree, str):
+        print(indent + tree)
+        return
+
+    for attr, branches in tree.items():
+        print(indent + f"[{attr}]")
+        for val, subtree in branches.items():
+            print(indent + f"├── {val}")
+            print_tree(subtree, indent + "│   ")
+
+def classify(tree, sample):
+    if isinstance(tree, str):
+        return tree.split("→ ")[1].strip()
+
+    attr = next(iter(tree))
+    val = sample.get(attr)
+
+    if val not in tree[attr]:
+        return "Unknown"
+
+    return classify(tree[attr][val], sample)
+
+def main():
+    # Load training data
+    try:
+        df = pd.read_csv('train.csv')
+        print("Loaded training_data.csv successfully:")
+        print(df.to_string(index=False))
+
+    except FileNotFoundError:
+        print("Error: training_data.csv not found.")
+        return
+
+    target = df.columns[-1]
+    features = list(df.columns[:-1])
+
+    # Build decision tree
+    tree = id3(df, features, target)
+
+    # Print decision tree
+    print("\nDecision Tree:")
+    print_tree(tree)
+
+    # Calculate training accuracy
+    correct = sum(classify(tree, row.to_dict()) == row[target] for _, row in df.iterrows())
+    print(f"\nTraining Accuracy: {correct / len(df):.1%}")
+
+    # Ask user for test input
+    print("\nEnter test sample values:")
+    sample = {}
+    for feature in features:
+        value = input(f"{feature}: ")
+        sample[feature] = value
+
+    print(f"\nPrediction: {classify(tree, sample)}")
+
+if __name__ == "__main__":
+    main()
+
+
+
+train.csv
+Outlook,Temperature,Humidity,Wind,Water,Forecast,EnjoySport
+Sunny,Warm,Normal,Strong,Warm,Same,Yes
+Sunny,Warm,High,Strong,Warm,Same,No
+Rainy,Cold,High,Strong,Warm,Change,No
+Sunny,Warm,High,Strong,Cool,Change,Yes
+Overcast,Hot,High,Weak,Cool,Same,Yes
+Rainy,Warm,Normal,Weak,Warm,Change,No
+Sunny,Hot,Normal,Strong,Warm,Same,Yes
+Rainy,Warm,High,Strong,Cool,Change,No
+Overcast,Warm,Normal,Weak,Warm,Same,Yes
+Sunny,Cold,Normal,Weak,Cool,Same,Yes
+Rainy,Hot,High,Strong,Warm,Change,No
+Sunny,Hot,High,Weak,Warm,Same,No
+Overcast,Cold,Normal,Strong,Cool,Same,Yes
+Rainy,Warm,High,Weak,Cool,Change,No
+Sunny,Hot,Normal,Strong,Cool,Same,Yes
+
+
+
+Output
+
+Loaded training_data.csv successfully:
+ Outlook Temperature Humidity   Wind Water Forecast EnjoySport
+   Sunny        Warm   Normal Strong  Warm     Same        Yes
+   Sunny        Warm     High Strong  Warm     Same         No
+   Rainy        Cold     High Strong  Warm   Change         No
+   Sunny        Warm     High Strong  Cool   Change        Yes
+Overcast         Hot     High   Weak  Cool     Same        Yes
+   Rainy        Warm   Normal   Weak  Warm   Change         No
+   Sunny         Hot   Normal Strong  Warm     Same        Yes
+   Rainy        Warm     High Strong  Cool   Change         No
+Overcast        Warm   Normal   Weak  Warm     Same        Yes
+   Sunny        Cold   Normal   Weak  Cool     Same        Yes
+   Rainy         Hot     High Strong  Warm   Change         No
+   Sunny         Hot     High   Weak  Warm     Same         No
+Overcast        Cold   Normal Strong  Cool     Same        Yes
+   Rainy        Warm     High   Weak  Cool   Change         No
+   Sunny         Hot   Normal Strong  Cool     Same        Yes
+
+Decision Tree:
+[Outlook]
+├── Overcast
+│   → Yes
+├── Rainy
+│   → No
+├── Sunny
+│   [Humidity]
+│   ├── High
+│   │   [Water]
+│   │   ├── Cool
+│   │   │   → Yes
+│   │   ├── Warm
+│   │   │   → No
+│   ├── Normal
+│   │   → Yes
+
+Training Accuracy: 100.0%
+
+Enter test sample values:
+Outlook:  Rainy
+Temperature:  Warm
+Humidity:  High
+Wind:  Strong
+Water:  Warm
+Forecast:  Change
+
+Prediction: No
